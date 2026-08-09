@@ -37,7 +37,7 @@ JobSathi is a MERN stack web application that helps users keep track of their jo
 
 ## Future Improvements
 
-- Interview reminders
+
 - Calendar integration
 - Email notifications
 - Company-wise application insights
