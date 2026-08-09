@@ -12,6 +12,7 @@ JobSathi is a MERN stack web application that helps users keep track of their jo
 - Monthly application analytics
 - Recent applications and activity timeline
 - Responsive UI with Light/Dark mode
+-  AI-powered resume Analyzer
 
 ## Tech Stack
 
@@ -31,12 +32,14 @@ JobSathi is a MERN stack web application that helps users keep track of their jo
 - JWT Authentication
 - bcryptjs
 
+**AI Integration**
+-Google Gemini API
+
 ## Future Improvements
 
 - Interview reminders
 - Calendar integration
 - Email notifications
-- AI-powered resume review
 - Company-wise application insights
 
 ## Author
