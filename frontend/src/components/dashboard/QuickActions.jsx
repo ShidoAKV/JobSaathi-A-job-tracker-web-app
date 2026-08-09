@@ -5,10 +5,6 @@ import {
   FileText,
   Briefcase,
 } from "lucide-react";
-
-
-
-
 const QuickActions = () => {
   const navigate = useNavigate();
 
@@ -28,13 +24,12 @@ const QuickActions = () => {
     color: "from-purple-500 to-pink-500",
     action: () => navigate("/analytics"),
   },
-  {
-    title: "Resume",
-    icon: <FileText size={22} />,
-    color: "from-green-500 to-emerald-500",
-    action: () =>
-      alert("Resume feature is coming soon!"),
-  },
+{
+  title: "Resume",
+  icon: <FileText size={28} />,
+  color: "from-green-500 to-emerald-500",
+  action: () => navigate("/resume"),
+},
   {
     title: "My Jobs",
     icon: <Briefcase size={22} />,

@@ -147,32 +147,33 @@ if (!open) return null;
               Status
             </label>
 
-            <select
-            name="status"
-            value={formData.status}
-             onChange={handleChange}
-             className="w-full mt-2 border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
-             >
-             {formData.status === "Interview" && (
-           <div className="mt-4">
-  <label className="font-medium text-slate-700 dark:text-slate-300">
-    Interview Date & Time
-  </label>
+           <select
+           name="status"
+           value={formData.status}
+           onChange={handleChange}
+           className="w-full mt-2 border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
+           >
+          <option value="Applied">Applied</option>
+          <option value="Interview">Interview</option>
+          <option value="Offer">Offer</option>
+          <option value="Rejected">Rejected</option>
+          </select>
+          {formData.status === "Interview" && (
+  <div className="mt-4">
+    <label className="font-medium text-slate-700 dark:text-slate-300">
+      Interview Date
+    </label>
 
-  <input
-    type="datetime-local"
-    name="interviewDate"
-    value={formData.interviewDate}
-    onChange={handleChange}
-    className="w-full mt-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
-  />
-</div>
+    <input
+      type="date"
+      name="interviewDate"
+      value={formData.interviewDate}
+      onChange={handleChange}
+      min={new Date().toISOString().split("T")[0]}
+      className="w-full mt-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
 )}
-            <option>Applied</option>
-            <option>Interview</option>
-            <option>Offer</option>
-             <option>Rejected</option>
-           </select>
           </div>
 
           <div>
