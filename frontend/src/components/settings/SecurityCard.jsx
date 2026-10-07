@@ -104,7 +104,7 @@ const handleUpdate = () => {
     name="newPassword"
     value={passwords.newPassword}
     onChange={handleChange}
-    placeholder="••••••••"
+    placeholder=""
     className="w-full mt-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl p-3 pr-12 outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300"
   />
 
@@ -131,7 +131,7 @@ const handleUpdate = () => {
     name="confirmPassword"
     value={passwords.confirmPassword}
     onChange={handleChange}
-    placeholder="••••••••"
+    placeholder=""
     className="w-full mt-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl p-3 pr-12 outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300"
   />
 

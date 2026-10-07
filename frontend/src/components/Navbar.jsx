@@ -157,13 +157,7 @@ const Navbar = ({
               </div>
 
               {/* Profile */}
-              <button
-                onClick={() => setProfileOpen(false)}
-                className="w-full flex items-center gap-3 px-3 py-3 mt-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"
-              >
-                <User size={18} />
-                Profile
-              </button>
+              
 
               {/* Logout */}
               <button
