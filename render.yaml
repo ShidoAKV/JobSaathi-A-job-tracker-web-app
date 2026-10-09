@@ -1,0 +1,50 @@
+# Render Blueprint: deploys the API (web service) and the frontend (static site) independently.
+# Apply via Render Dashboard -> New -> Blueprint, or `render blueprint launch`.
+services:
+  - type: web
+    name: jobsaathi-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false          # MongoDB Atlas connection string (set in dashboard)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false          # optional: AI chatbot + resume analyzer
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
+      - key: CLIENT_URL
+        value: https://jobsaathi-web.onrender.com
+      - key: APP_URL
+        value: https://jobsaathi-web.onrender.com
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: NOTIFY_CRON
+        value: "*/2 * * * *"
+
+  - type: web
+    name: jobsaathi-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_API_URL
+        value: https://jobsaathi-api.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
