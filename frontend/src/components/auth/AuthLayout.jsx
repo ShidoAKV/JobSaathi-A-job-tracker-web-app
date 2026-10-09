@@ -1,79 +1,75 @@
-import professional from "../../assets/images/icons/WP.jpeg";
-const AuthLayout = ({ children }) => {
-  return (
-    <div className="min-h-screen grid grid-cols-2 bg-slate-100">
+import { BarChart3, Bot, Briefcase, MessageSquare } from "lucide-react";
+import Logo from "../ui/Logo";
 
-      {/* Left Section */}
-      <div className="flex flex-col justify-center px-20 bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500 text-white relative overflow-hidden">
-        {/* Background Blur Circles */}
-        <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/10"></div>
+const highlights = [
+  {
+    icon: Briefcase,
+    title: "Track every application",
+    text: "A kanban pipeline from Applied to Offer, with interview reminders.",
+  },
+  {
+    icon: Bot,
+    title: "AI career assistant",
+    text: "Gemini-powered chat for stats, top jobs and company research.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Talk to companies",
+    text: "Message hiring teams directly on any listed role.",
+  },
+  {
+    icon: BarChart3,
+    title: "Measure what works",
+    text: "Analytics on response rates, monthly volume and outcomes.",
+  },
+];
 
-        <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-white/10"></div>
+const AuthLayout = ({ children }) => (
+  <div className="min-h-screen bg-bg grid lg:grid-cols-[1.05fr_1fr]">
+    <section className="hidden lg:flex flex-col justify-between p-12 xl:p-16 bg-surface border-r border-line">
+      <Logo size="lg" showTagline />
 
-        <div className="relative z-10">
- 
+      <div className="max-w-md">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4">
+          Job search, organised
+        </p>
+        <h2 className="text-4xl xl:text-5xl font-extrabold tracking-tight text-fg leading-[1.1]">
+          Land your next role with clarity and confidence.
+        </h2>
+        <p className="mt-5 text-fg-muted text-lg leading-relaxed">
+          JobSaathi keeps your applications, interviews, conversations and
+          insights in one calm, focused workspace.
+        </p>
 
-          <h1 className="text-6xl font-extrabold">
-            JobSathi
-          </h1>
-
-          <p className="mt-6 text-xl text-blue-100 leading-9">
-            Organize your job applications,
-            prepare for interviews and
-            land your dream job.
-          </p>
-
-          <div className="mt-12 space-y-6">
-
-  <div className="flex items-center gap-3">
-    <span className="text-2xl">🚀</span>
-    <p className="text-lg">Track Job Applications</p>
-  </div>
-
-  <div className="flex items-center gap-3">
-    <span className="text-2xl">📊</span>
-    <p className="text-lg">Manage Interview Pipeline</p>
-  </div>
-
-  <div className="flex items-center gap-3">
-    <span className="text-2xl">💼</span>
-    <p className="text-lg">Organize Every Opportunity</p>
-  </div>
-
-  <div className="flex items-center gap-3">
-    <span className="text-2xl">🏆</span>
-    <p className="text-lg">Land Your Dream Offer</p>
-  </div>
-
-</div>
-
-        </div>
-
+        <ul className="mt-10 space-y-5">
+          {highlights.map(({ icon: Icon, title, text }) => (
+            <li key={title} className="flex gap-4">
+              <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0">
+                <Icon size={18} />
+              </div>
+              <div>
+                <p className="font-semibold text-fg">{title}</p>
+                <p className="text-sm text-fg-muted">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* Right Section */}
-      {/* Right Section */}
-<div className="relative flex justify-center items-center p-8 overflow-hidden">
+      <p className="text-xs text-fg-subtle">
+        © {new Date().getFullYear()} JobSaathi. Built for ambitious job seekers.
+      </p>
+    </section>
 
-  {/* Background Image */}
-  <img
-    src={professional}
-    alt="Professional"
-    className="absolute inset-0 w-full h-full object-cover opacity-20 blur-[1px]"
-  />
-
-  {/* Optional blue overlay */}
-  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10"></div>
-
-  {/* Login / Signup Form */}
-  <div className="relative z-10">
-    {children}
+    <section className="flex items-center justify-center p-6 sm:p-10">
+      <div className="w-full max-w-md animate-rise">
+        <div className="lg:hidden mb-8">
+          <Logo size="lg" showTagline />
+        </div>
+        {children}
+      </div>
+    </section>
   </div>
-
-</div>
-
-    </div>
-  );
-};
+);
 
 export default AuthLayout;

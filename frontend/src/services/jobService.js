@@ -1,35 +1,21 @@
-import axios from "axios";
-
-const API = axios.create({
-  baseURL: "http://localhost:5000/api/jobs",
-});
-
-API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return req;
-});
+import api from "./api";
 
 export const getJobs = async () => {
-  const { data } = await API.get("/");
+  const { data } = await api.get("/jobs");
   return data;
 };
 
 export const createJob = async (jobData) => {
-  const { data } = await API.post("/", jobData);
+  const { data } = await api.post("/jobs", jobData);
   return data;
 };
 
 export const updateJob = async (id, jobData) => {
-  const { data } = await API.put(`/${id}`, jobData);
+  const { data } = await api.put(`/jobs/${id}`, jobData);
   return data;
 };
 
 export const deleteJob = async (id) => {
-  const { data } = await API.delete(`/${id}`);
+  const { data } = await api.delete(`/jobs/${id}`);
   return data;
 };

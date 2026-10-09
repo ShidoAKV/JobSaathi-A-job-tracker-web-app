@@ -1,208 +1,105 @@
-import { useState } from "react";
-import { User, Camera } from "lucide-react";
+import { useEffect, useState } from "react";
+import { User, Mail, Phone, Link2, Code2 } from "lucide-react";
 import toast from "react-hot-toast";
+import Spinner from "../ui/Spinner";
+import { getProfile, updateProfile } from "../../services/userService";
+import { getErrorMessage } from "../../services/api";
+import { getInitials, updateStoredUser } from "../../utils/auth";
+
+const fields = [
+  { name: "name", label: "Full name", icon: User, placeholder: "Your name", type: "text" },
+  { name: "email", label: "Email", icon: Mail, placeholder: "you@example.com", type: "email" },
+  { name: "phone", label: "Phone", icon: Phone, placeholder: "10-digit number", type: "tel" },
+  { name: "linkedin", label: "LinkedIn", icon: Link2, placeholder: "https://linkedin.com/in/username", type: "url" },
+  { name: "github", label: "GitHub", icon: Code2, placeholder: "https://github.com/username", type: "url", full: true },
+];
 
 const ProfileCard = () => {
-  const [image, setImage] = useState(null);
+  const [profile, setProfile] = useState({ name: "", email: "", phone: "", linkedin: "", github: "" });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const handleImage = (e) => {
-    const file = e.target.files[0];
+  useEffect(() => {
+    getProfile()
+      .then((data) =>
+        setProfile({
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          linkedin: data.linkedin || "",
+          github: data.github || "",
+        })
+      )
+      .catch((e) => toast.error(getErrorMessage(e, "Failed to load profile")))
+      .finally(() => setLoading(false));
+  }, []);
 
-    if (file) {
-      setImage(URL.createObjectURL(file));
-    }
-  };
+  const handleChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
 
-  const [profile, setProfile] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    linkedin: "",
-    github: "",
-  });
-
-  const handleChange = (e) => {
-    setProfile({
-      ...profile,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSave = () => {
-    if (!profile.name || !profile.email) {
-      toast.error("Name and Email are required");
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!profile.name.trim() || !profile.email.trim()) {
+      toast.error("Name and email are required");
       return;
     }
-
-    toast.success("Profile Updated Successfully");
-
-    console.log(profile);
+    setSaving(true);
+    try {
+      const updated = await updateProfile(profile);
+      updateStoredUser({ name: updated.name, email: updated.email });
+      toast.success("Profile updated");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to update profile"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md dark:shadow-slate-900/30 p-8 transition-colors duration-300">
-
-      <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-8">
-        Profile Information
-      </h2>
-
-      {/* Profile Image */}
-
-      <div className="flex justify-center mb-10">
-        <div className="relative">
-
-          <div className="w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-700 border-4 border-blue-100 dark:border-slate-600 overflow-hidden flex items-center justify-center">
-
-            {image ? (
-              <img
-                src={image}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User
-                size={60}
-                className="text-slate-400"
-              />
-            )}
-
-          </div>
-
-          <label className="absolute bottom-1 right-1 w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center cursor-pointer hover:bg-blue-700 transition">
-            <Camera size={18} />
-
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={handleImage}
-            />
-          </label>
-
+    <form onSubmit={handleSave} className="card p-6 sm:p-8">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-16 h-16 rounded-2xl bg-primary text-on-primary flex items-center justify-center text-xl font-bold">
+          {getInitials(profile.name)}
+        </div>
+        <div>
+          <h2 className="card-title">Profile information</h2>
+          <p className="text-sm text-fg-muted">Shown to companies when you message them.</p>
         </div>
       </div>
 
-      {/* Form */}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {/* Full Name */}
-        <div>
-          <label className="block font-medium text-slate-700 dark:text-slate-200 mb-2">
-            Full Name
-          </label>
-
-          <input
-            type="text"
-            name="name"
-            value={profile.name}
-            onChange={handleChange}
-            placeholder="Your Name"
-            className="w-full border border-slate-300 dark:border-slate-600 rounded-xl p-3 outline-none
-                       bg-white dark:bg-slate-700
-                       text-slate-800 dark:text-white
-                       placeholder:text-slate-400 dark:placeholder:text-slate-400
-                       focus:ring-2 focus:ring-blue-500"
-          />
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-11 rounded-xl bg-surface-2 animate-pulse" />
+          ))}
         </div>
-
-        {/* Email */}
-        <div>
-          <label className="block font-medium text-slate-700 dark:text-slate-200 mb-2">
-            Email
-          </label>
-
-          <input
-            type="email"
-            name="email"
-            value={profile.email}
-            onChange={handleChange}
-            placeholder="your.email@example.com"
-            className="w-full border border-slate-300 dark:border-slate-600 rounded-xl p-3 outline-none
-                       bg-white dark:bg-slate-700
-                       text-slate-800 dark:text-white
-                       placeholder:text-slate-400 dark:placeholder:text-slate-400
-                       focus:ring-2 focus:ring-blue-500"
-          />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {fields.map(({ name, label, icon: Icon, placeholder, type, full }) => (
+            <div key={name} className={full ? "md:col-span-2" : ""}>
+              <label className="label">{label}</label>
+              <div className="relative">
+                <Icon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle" />
+                <input
+                  type={type}
+                  name={name}
+                  value={profile[name]}
+                  onChange={handleChange}
+                  placeholder={placeholder}
+                  maxLength={name === "phone" ? 10 : undefined}
+                  className="input pl-10"
+                />
+              </div>
+            </div>
+          ))}
         </div>
-
-        {/* Phone */}
-        <div>
-          <label className="block font-medium text-slate-700 dark:text-slate-200 mb-2">
-            Phone Number
-          </label>
-
-          <input
-            type="tel"
-            name="phone"
-            value={profile.phone}
-            onChange={handleChange}
-            maxLength={10}
-            placeholder="Your Phone Number"
-            className="w-full border border-slate-300 dark:border-slate-600 rounded-xl p-3 outline-none
-                       bg-white dark:bg-slate-700
-                       text-slate-800 dark:text-white
-                       placeholder:text-slate-400 dark:placeholder:text-slate-400
-                       focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* LinkedIn */}
-        <div>
-          <label className="block font-medium text-slate-700 dark:text-slate-200 mb-2">
-            LinkedIn
-          </label>
-
-          <input
-            type="url"
-            name="linkedin"
-            value={profile.linkedin}
-            onChange={handleChange}
-            placeholder="https://linkedin.com/in/username"
-            className="w-full border border-slate-300 dark:border-slate-600 rounded-xl p-3 outline-none
-                       bg-white dark:bg-slate-700
-                       text-slate-800 dark:text-white
-                       placeholder:text-slate-400 dark:placeholder:text-slate-400
-                       focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* GitHub */}
-        <div className="md:col-span-2">
-          <label className="block font-medium text-slate-700 dark:text-slate-200 mb-2">
-            GitHub
-          </label>
-
-          <input
-            type="url"
-            name="github"
-            value={profile.github}
-            onChange={handleChange}
-            placeholder="https://github.com/username"
-            className="w-full border border-slate-300 dark:border-slate-600 rounded-xl p-3 outline-none
-                       bg-white dark:bg-slate-700
-                       text-slate-800 dark:text-white
-                       placeholder:text-slate-400 dark:placeholder:text-slate-400
-                       focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-      </div>
-
-      {/* Save Button */}
+      )}
 
       <div className="flex justify-end mt-8">
-
-        <button
-          onClick={handleSave}
-          className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold hover:scale-105 transition"
-        >
-          Save Changes
+        <button type="submit" disabled={saving || loading} className="btn-primary">
+          {saving ? <Spinner size={16} /> : "Save changes"}
         </button>
-
       </div>
-
-    </div>
+    </form>
   );
 };
 

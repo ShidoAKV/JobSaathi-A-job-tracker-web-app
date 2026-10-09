@@ -1,88 +1,76 @@
-const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const asyncHandler = require("../utils/asyncHandler");
+const User = require("../models/User");
 
-// GET PROFILE
-const getProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
+// GET /api/user/profile
+const getProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id).select("-password");
+  if (!user) return res.status(404).json({ message: "User not found" });
+  res.json(user);
+});
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
+// PUT /api/user/profile  (role / recruiterRequest are never editable here)
+const updateProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+  user.name = req.body.name || user.name;
+  user.email = req.body.email || user.email;
+  user.phone = req.body.phone || "";
+  user.linkedin = req.body.linkedin || "";
+  user.github = req.body.github || "";
+  user.profileImage = req.body.profileImage || "";
+
+  if (typeof req.body.company === "string" && ["recruiter", "admin"].includes(user.role)) {
+    user.company = req.body.company.trim();
   }
-};
 
-// UPDATE PROFILE
-const updateProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
+  await user.save();
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
+  const safe = user.toObject();
+  delete safe.password;
+  res.json(safe);
+});
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.phone = req.body.phone || "";
-    user.linkedin = req.body.linkedin || "";
-    user.github = req.body.github || "";
-    user.profileImage = req.body.profileImage || "";
-
-    await user.save();
-
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+// PUT /api/user/password
+const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: "Current and new password are required" });
   }
-};
-
-// CHANGE PASSWORD
-const changePassword = async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-
-    const user = await User.findById(req.user.id);
-
-    const match = await bcrypt.compare(
-      currentPassword,
-      user.password
-    );
-
-    if (!match) {
-      return res.status(400).json({
-        message: "Current password is incorrect",
-      });
-    }
-
-    user.password = await bcrypt.hash(newPassword, 10);
-
-    await user.save();
-
-    res.json({
-      message: "Password updated successfully",
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: "Password must be at least 6 characters" });
   }
-};
 
-module.exports = {
-  getProfile,
-  updateProfile,
-  changePassword,
-};
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  const match = await bcrypt.compare(currentPassword, user.password);
+  if (!match) return res.status(400).json({ message: "Current password is incorrect" });
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+
+  res.json({ message: "Password updated successfully" });
+});
+
+// POST /api/user/request-recruiter  { company }
+const requestRecruiter = asyncHandler(async (req, res) => {
+  const company = (req.body.company || "").trim();
+  if (!company) return res.status(400).json({ message: "Company name is required" });
+
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (["recruiter", "admin"].includes(user.role)) {
+    return res.status(400).json({ message: "You already have employer access" });
+  }
+
+  user.recruiterRequest = "pending";
+  user.company = company;
+  await user.save();
+
+  res.json(user.toPublic());
+});
+
+module.exports = { getProfile, updateProfile, changePassword, requestRecruiter };

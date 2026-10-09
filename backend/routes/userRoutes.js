@@ -1,21 +1,17 @@
 const express = require("express");
-const router = express.Router();
-
 const protect = require("../middleware/authMiddleware");
-
 const {
   getProfile,
   updateProfile,
   changePassword,
+  requestRecruiter,
 } = require("../controllers/userController");
 
-// Get Logged-in User Profile
+const router = express.Router();
+
 router.get("/profile", protect, getProfile);
-
-// Update Profile
 router.put("/profile", protect, updateProfile);
-
-// Change Password
 router.put("/password", protect, changePassword);
+router.post("/request-recruiter", protect, requestRecruiter);
 
 module.exports = router;

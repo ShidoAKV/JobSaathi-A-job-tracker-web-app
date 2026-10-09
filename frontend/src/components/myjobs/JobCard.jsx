@@ -4,195 +4,134 @@ import {
   CalendarDays,
   MapPin,
   ExternalLink,
-  MoreVertical,
+  MoreHorizontal,
   Pencil,
   Trash2,
+  IndianRupee,
+  StickyNote,
 } from "lucide-react";
+import { format } from "date-fns";
+import StatusBadge from "../ui/StatusBadge";
 
-const statusColor = {
-  Applied:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-
-  Interview:
-    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
-
-  Offer:
-    "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-
-  Rejected:
-    "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-};
-const JobCard = ({
-  job,
-   index,
-  searchTerm,
-  setJobs,
-  setOpenModal,
-  setEditingJob,
-   handleDelete,
-}) => {
+const JobCard = ({ job, index, setOpenModal, setEditingJob, handleDelete }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+
   useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (menuRef.current && !menuRef.current.contains(event.target)) {
-      setMenuOpen(false);
-    }
-  };
-
-  document.addEventListener("mousedown", handleClickOutside);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
-
+    if (!menuOpen) return undefined;
+    const onClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [menuOpen]);
 
   return (
-    
-    
-  <Draggable
-    draggableId={job._id.toString()}
-    index={index}
-  >
-    {(provided) => (
-      <div
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
-       className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-md dark:shadow-slate-900/30 border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-      >
-
-      {/* Top */}
-      <div className="flex justify-between items-start">
-
-        <div className="flex gap-3">
-
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white flex items-center justify-center font-bold text-lg">
-           {job.company?.charAt(0).toUpperCase() || "J"}
-          </div>
-
-          <div>
-            <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-              {job.company}
-            </h3>
-
-            <p className="text-slate-500 dark:text-slate-400">
-              {job.role}
-            </p>
-          </div>
-
-        </div>
-
-  <div className="relative" ref={menuRef}>
-
-  <button
-    onClick={() => setMenuOpen(!menuOpen)}
-  >
-    <MoreVertical
-      size={20}
-      className="text-slate-400 dark:text-slate-300 hover:text-slate-700 dark:hover:text-white"
-    />
-  </button>
-
-  {menuOpen && (
-    <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20">
-
-      <button
-  onClick={() => {
-    setEditingJob(job);
-    setOpenModal(true);
-    setMenuOpen(false);
-  }}
-  className="flex items-center gap-3 w-full px-4 py-3 text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition"
->
-  <Pencil size={16} />
-  Edit Job
-</button>
-
-      <button
-  onClick={() => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this job?"
-    );
-
-    if (confirmDelete) {
-     handleDelete(job._id);
-    }
-
-    setMenuOpen(false);
-  }}
-  className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
->
-  <Trash2 size={16} />
-  Delete Job
-</button>
-
-    </div>
-  )}
-
-</div>
-
-      </div>
-
-      {/* Details */}
-
-      <div className="mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-400">
-
-  <div className="flex items-center gap-2">
-    <MapPin size={16} />
-    <span>{job.location || "Location not specified"}</span>
-  </div>
-
- {job.salary && (
-  <div className="flex items-center gap-2">
-    💰
-    <span>{job.salary}</span>
-  </div>
-)}
-  <div className="flex items-center gap-2">
-    <CalendarDays size={16} />
-    <span>{job.appliedDate || "No date"}</span>
-  </div>
-
-  {job.jobLink && (
-    <a
-      href={job.jobLink}
-      target="_blank"
-      rel="noreferrer"
-     className="flex items-center gap-2 text-blue-600 dark:text-cyan-400 hover:underline"
-    >
-      <ExternalLink size={16} />
-      View Job
-    </a>
-  )}
-
-  {job.notes && (
-    <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-3 mt-2">
-      <p className="text-slate-600 dark:text-slate-300 text-sm">
-        📝 {job.notes}
-      </p>
-    </div>
-  )}
-
-</div>
-
-      {/* Bottom */}
-
-      <div className="mt-6 flex justify-end">
-
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor[job.status]}`}
+    <Draggable draggableId={job._id.toString()} index={index}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className={`card p-4 transition-shadow ${
+            snapshot.isDragging ? "shadow-pop border-primary/60 rotate-[1deg]" : "hover:border-line-strong"
+          }`}
         >
-          {job.status}
-        </span>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-surface-2 border border-line flex items-center justify-center font-bold text-fg shrink-0">
+                {job.company?.charAt(0).toUpperCase() || "J"}
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-fg truncate">{job.company}</h3>
+                <p className="text-sm text-fg-muted truncate">{job.role}</p>
+              </div>
+            </div>
 
-      </div>
+            <div className="relative shrink-0" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-fg-subtle hover:text-fg hover:bg-surface-2 transition-colors"
+                aria-label="Actions"
+              >
+                <MoreHorizontal size={18} />
+              </button>
 
-         </div>
-    )}
-  </Draggable>
-);
+              {menuOpen && (
+                <div className="absolute right-0 mt-1 w-40 card shadow-pop p-1 z-20 animate-pop">
+                  <button
+                    onClick={() => {
+                      setEditingJob(job);
+                      setOpenModal(true);
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm text-fg hover:bg-surface-2 transition-colors"
+                  >
+                    <Pencil size={15} />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      if (window.confirm("Delete this application?")) handleDelete(job._id);
+                    }}
+                    className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm text-danger hover:bg-danger-soft transition-colors"
+                  >
+                    <Trash2 size={15} />
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-1.5 text-sm text-fg-muted">
+            <div className="flex items-center gap-2">
+              <MapPin size={14} className="text-fg-subtle" />
+              <span className="truncate">{job.location || "Location not specified"}</span>
+            </div>
+            {job.salary && (
+              <div className="flex items-center gap-2">
+                <IndianRupee size={14} className="text-fg-subtle" />
+                <span>{job.salary}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <CalendarDays size={14} className="text-fg-subtle" />
+              <span>
+                {job.status === "Interview" && job.interviewDate
+                  ? `Interview ${format(new Date(job.interviewDate), "d MMM yyyy")}`
+                  : job.appliedDate
+                  ? `Applied ${job.appliedDate}`
+                  : "No date"}
+              </span>
+            </div>
+            {job.notes && (
+              <div className="flex items-start gap-2 pt-1">
+                <StickyNote size={14} className="text-fg-subtle mt-0.5 shrink-0" />
+                <p className="text-xs leading-relaxed line-clamp-2">{job.notes}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex items-center justify-between">
+            <StatusBadge status={job.status} />
+            {job.jobLink && (
+              <a
+                href={job.jobLink}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                View job <ExternalLink size={12} />
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+    </Draggable>
+  );
 };
 
 export default JobCard;

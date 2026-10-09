@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -8,66 +7,33 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { tooltipStyle } from "./chartTheme";
 
-import { getAnalytics } from "../../services/analyticsService";
-
-const ApplicationsChart = () => {
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  const fetchAnalytics = async () => {
-    try {
-      const analytics = await getAnalytics();
-      setData(analytics.monthlyApplications);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md dark:shadow-slate-900/30 p-6 transition-colors duration-300">
-      <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-5">
-        Monthly Applications
-      </h2>
-
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#475569"
-            />
-
-            <XAxis
-              dataKey="month"
-              stroke="#94a3b8"
-            />
-
-            <YAxis stroke="#94a3b8" />
-
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#1e293b",
-                border: "none",
-                borderRadius: "12px",
-                color: "#fff",
-              }}
-              labelStyle={{ color: "#fff" }}
-            />
-
-            <Bar
-              dataKey="applications"
-              radius={[8, 8, 0, 0]}
-              fill="#2563eb"
-            />
-          </BarChart>
-        </ResponsiveContainer>
+const ApplicationsChart = ({ data, loading }) => (
+  <div className="card p-6 h-full">
+    <div className="flex items-center justify-between mb-5">
+      <div>
+        <h2 className="card-title">Monthly applications</h2>
+        <p className="text-sm text-fg-muted">Applications logged per month this year</p>
       </div>
     </div>
-  );
-};
+
+    <div className="h-80">
+      {loading ? (
+        <div className="h-full rounded-xl bg-surface-2 animate-pulse" />
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} barSize={26}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
+            <XAxis dataKey="month" stroke="var(--fg-muted)" tickLine={false} axisLine={false} fontSize={12} />
+            <YAxis stroke="var(--fg-muted)" tickLine={false} axisLine={false} allowDecimals={false} fontSize={12} />
+            <Tooltip cursor={{ fill: "var(--primary-soft)" }} contentStyle={tooltipStyle} />
+            <Bar dataKey="applications" radius={[6, 6, 0, 0]} fill="#6366f1" />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  </div>
+);
 
 export default ApplicationsChart;

@@ -1,149 +1,83 @@
-import AuthLayout from "../components/auth/AuthLayout";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Mail, Lock, ArrowRight } from "lucide-react";
+import toast from "react-hot-toast";
+import AuthLayout from "../components/auth/AuthLayout";
+import AuthInput from "../components/auth/AuthInput";
+import Spinner from "../components/ui/Spinner";
 import { loginUser } from "../services/authService";
-import { useNavigate } from "react-router-dom";
+import { getErrorMessage } from "../services/api";
+import { storeSession } from "../utils/auth";
 
 const Login = () => {
-    const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "" });
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const data = await loginUser(formData);
-
-    // JWT Token Save
-    localStorage.setItem("token", data.token);
-
-    // User Info Save
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    alert("Login Successful ✅");
-
-    navigate("/dashboard");
-  } catch (error) {
-    alert(error.response?.data?.message || "Login Failed");
-  }
-};
-
- const handleChange = (e) => {
-  setFormData({
-    ...formData,
-    [e.target.name]: e.target.value,
-  });
-};
+    try {
+      const data = await loginUser(form);
+      storeSession(data);
+      toast.success(`Welcome back, ${data.user?.name?.split(" ")[0] || "there"}!`);
+      navigate(location.state?.from || "/dashboard", { replace: true });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Login failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AuthLayout>
-      <div className="w-full max-w-lg bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-12 hover:shadow-blue-200 transition-all duration-500">
-        <h2 className="text-4xl font-extrabold text-slate-800">
-          Welcome Back 
-        </h2>
-
-        <p className="mt-3 text-slate-500 text-lg">
-          Sign in to continue your job search journey.
+      <div className="card p-8 sm:p-10">
+        <h1 className="text-2xl font-bold text-fg tracking-tight">Sign in</h1>
+        <p className="mt-1.5 text-fg-muted">
+          Continue your job search where you left off.
         </p>
 
-        <form onSubmit={handleSubmit}>
-          {/* Email */}
-          <div className="mt-8">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Email Address
-            </label>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <AuthInput
+            label="Email address"
+            icon={Mail}
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+          />
 
-            <div className="flex items-center border border-slate-300 rounded-xl px-4 py-3 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-200 transition">
-              <Mail size={20} className="text-slate-400" />
+          <AuthInput
+            label="Password"
+            icon={Lock}
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            required
+          />
 
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                 className="w-full ml-3 outline-none bg-transparent text-slate-900 placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="mt-6">
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Password
-            </label>
-
-            <div className="flex items-center border border-slate-300 rounded-xl px-4 py-3 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-200 transition">
-              <Lock size={20} className="text-slate-400" />
-
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                 className="w-full ml-3 outline-none bg-transparent text-slate-900 placeholder:text-slate-400"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff size={20} className="text-slate-400" />
-                ) : (
-                  <Eye size={20} className="text-slate-400" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Remember Me */}
-          <div className="flex items-center justify-between mt-5">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                className="w-4 h-4 accent-blue-600"
-              />
-
-              <span className="text-sm text-slate-600">
-                Remember Me
-              </span>
-            </label>
-
-            <button
-              type="button"
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Forgot Password?
-            </button>
-          </div>
-
-          {/* Login Button */}
-          <button
-            type="submit"
-            className="w-full mt-8 bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg"
-          >
-            Sign In
+          <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+            {loading ? <Spinner size={18} /> : <>Sign in <ArrowRight size={16} /></>}
           </button>
-
-          {/* Signup Link */}
-          <p className="text-center text-slate-600 mt-6">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              Create Account
-            </Link>
-          </p>
         </form>
+
+        <p className="text-center text-sm text-fg-muted mt-6">
+          New to JobSaathi?{" "}
+          <Link to="/signup" className="text-primary font-semibold hover:underline">
+            Create an account
+          </Link>
+        </p>
       </div>
     </AuthLayout>
   );

@@ -1,97 +1,50 @@
-import { useEffect, useState } from "react";
-import {
-  CheckCircle2,
-  Clock3,
-  CalendarCheck,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, CalendarCheck, Trophy, XCircle, Activity } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import EmptyState from "../ui/EmptyState";
 
-import { getAnalytics } from "../../services/analyticsService";
-
-
-
-const ActivityTimeline = () => {
-  const [activities, setActivities] = useState([]);
-
-useEffect(() => {
-  const fetchAnalytics = async () => {
-    try {
-      const data = await getAnalytics();
-      setActivities(data.recentActivities);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  fetchAnalytics();
-}, []);
-
-const getIcon = (status) => {
-  switch (status) {
-    case "Applied":
-      return <CheckCircle2 className="text-blue-500" />;
-
-    case "Interview":
-      return <CalendarCheck className="text-yellow-500" />;
-
-    case "Offer":
-      return <CheckCircle2 className="text-green-500" />;
-
-    case "Rejected":
-      return <XCircle className="text-red-500" />;
-
-    default:
-      return <Clock3 className="text-gray-500" />;
-  }
+const iconFor = {
+  Applied: { Icon: CheckCircle2, tone: "text-primary bg-primary-soft" },
+  Interview: { Icon: CalendarCheck, tone: "text-warning bg-warning-soft" },
+  Offer: { Icon: Trophy, tone: "text-success bg-success-soft" },
+  Rejected: { Icon: XCircle, tone: "text-danger bg-danger-soft" },
 };
-  return (
-    
-    
 
-    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg dark:shadow-slate-900/30 p-6 transition-colors duration-300">
+const ActivityTimeline = ({ activities, loading }) => (
+  <div className="card p-6">
+    <h2 className="card-title mb-5">Recent activity</h2>
 
-      <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
-        Recent Activity
-      </h2>
-
-      <div className="space-y-6">
-
-        {activities.map((item, index) => (
-          <div
-            key={index}
-            className="flex gap-4 border-b border-slate-200 dark:border-slate-700 pb-5 last:border-none last:pb-0"
-          >
-
-            <div className="mt-1">
-              {getIcon(item.status)}
-            </div>
-
-            <div>
-
-              <p className="font-medium text-slate-800 dark:text-white">
-               {item.status} • {item.company}
-              </p>
-
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-              {item.role}
-             </p>
-
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-               {formatDistanceToNow(new Date(item.date), {
-               addSuffix: true,
-              })}
-              </p>
-
-            </div>
-
-          </div>
+    {loading ? (
+      <div className="space-y-3">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="h-12 rounded-xl bg-surface-2 animate-pulse" />
         ))}
-
       </div>
-
-    </div>
-  );
-};
+    ) : activities.length === 0 ? (
+      <EmptyState icon={Activity} title="No activity yet" compact />
+    ) : (
+      <ol className="relative border-l border-line ml-4 space-y-6">
+        {activities.map((item, i) => {
+          const { Icon, tone } = iconFor[item.status] || iconFor.Applied;
+          return (
+            <li key={i} className="pl-7 relative">
+              <span
+                className={`absolute -left-4 top-0 w-8 h-8 rounded-full border-4 border-surface flex items-center justify-center ${tone}`}
+              >
+                <Icon size={14} />
+              </span>
+              <p className="font-medium text-fg text-sm">
+                {item.status} · {item.company}
+              </p>
+              <p className="text-sm text-fg-muted">{item.role}</p>
+              <p className="text-xs text-fg-subtle mt-0.5">
+                {formatDistanceToNow(new Date(item.date), { addSuffix: true })}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
+    )}
+  </div>
+);
 
 export default ActivityTimeline;

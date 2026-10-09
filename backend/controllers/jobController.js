@@ -1,12 +1,8 @@
 const Job = require("../models/Job");
-
-
-
-
+const { invalidateAnalytics } = require("../services/cacheService");
 
 const createJob = async (req, res) => {
   try {
-    console.log(req.body);
 
     const { company, role } = req.body;
 
@@ -21,6 +17,7 @@ const createJob = async (req, res) => {
       user: req.user.id,
     });
 
+    invalidateAnalytics(req.user.id);
     res.status(201).json(job);
   } catch (error) {
     res.status(500).json({
@@ -59,6 +56,7 @@ const deleteJob = async (req, res) => {
       });
     }
 
+    invalidateAnalytics(req.user.id);
     res.status(200).json({
       message: "Job deleted successfully",
     });
@@ -70,7 +68,6 @@ const deleteJob = async (req, res) => {
 };
 
 const updateJob = async (req, res) => {
-   console.log("UPDATE BODY:", req.body);
   try {
     const { id } = req.params;
 
@@ -81,7 +78,7 @@ const updatedJob = await Job.findOneAndUpdate(
   },
   req.body,
   {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   }
 );
@@ -92,6 +89,7 @@ const updatedJob = await Job.findOneAndUpdate(
       });
     }
 
+    invalidateAnalytics(req.user.id);
     res.status(200).json(updatedJob);
   } catch (error) {
     res.status(500).json({
